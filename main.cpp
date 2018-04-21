@@ -20,46 +20,46 @@ int main(int argc, char* argv[]){
 		printf("Usage: %s numParticlesLight numParticleMedium numParticleHeavy numSteps subSteps timeSubStep imageWidth imageHeight imageFilenamePrefix\n", argv[0]);
 	}
     else if((int)atof(argv[1]) < 0){
-        printf("Number of Light Particles can't be negative.");
+        printf("Number of Light Particles can't be negative.\n");
         inputError = true;
     }
     else if((int) atof(argv[2]) < 0){
-        printf("Number of Medium Particles can't be negative.");
+        printf("Number of Medium Particles can't be negative.\n");
         inputError = true;
     }
     else if((int) atof(argv[3]) < 0){
-        printf("Number of Heavy Particles can't be negative.");
+        printf("Number of Heavy Particles can't be negative.\n");
         inputError = true;
     }
     else if((int) atof(argv[4]) < 0){
-        printf("Number of steps can't be negative.");
+        printf("Number of steps can't be negative.\n");
         inputError = true;
     }
     else if((int) atof(argv[5]) < 0){
-        printf("Number of substeps can't be negative.");
+        printf("Number of substeps can't be negative.\n");
         inputError = true;
     }
     else if((double) atof(argv[6]) <= 0){
-        printf("Time must be greater than 0 seconds.");
+        printf("Time must be greater than 0 seconds.\n");
         inputError = true;
     }
     else if((int) atof(argv[7]) <= 0){
-        printf("Image width must be greter than 0.");
+        printf("Image width must be greter than 0.\n");
         inputError = true;
     }
     else if((int) atof(argv[8]) <= 0){
-        printf("Image height must be greter than 0.");
+        printf("Image height must be greter than 0.\n");
         inputError = true;
     }
 
     
     
-	MPI_Init(&argc,&argv);
+	//MPI_Init(&argc,&argv);
 
-	int p, my_rank;
+	//int p, my_rank;
 
-	MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-	MPI_Comm_size(MPI_COMM_WORLD, &p);
+	//MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+	//MPI_Comm_size(MPI_COMM_WORLD, &p);
 
 	//variables
 	int numParticlesLight = 0;
@@ -74,8 +74,33 @@ int main(int argc, char* argv[]){
 
 	unsigned char* image;
 
-	//root node stuff goes here
-	if(my_rank == 0){
+//	//root node stuff goes here
+//	if(my_rank == 0){
+//        numParticlesLight = atoi(argv[1]);
+//        numParticleMedium = atoi(argv[2]);
+//        numParticleHeavy  = atoi(argv[3]);
+//        
+//        numSteps = atoi(argv[4]);
+//        subSteps = atoi(argv[5]);
+//        
+//        timeSubStep = (double) atof(argv[6]);
+//        
+//        width = atoi(argv[7]);
+//        height = atoi(argv[8]);
+//        
+//        
+//        
+//		//almost done, just save the image
+//		//saveBMP(argv[9], image, width, height);
+//	}
+//	//all other nodes do this
+//	else{
+//
+//	}
+    
+    if(!inputError){
+        
+        //grab arguments
         numParticlesLight = atoi(argv[1]);
         numParticleMedium = atoi(argv[2]);
         numParticleHeavy  = atoi(argv[3]);
@@ -88,18 +113,14 @@ int main(int argc, char* argv[]){
         width = atoi(argv[7]);
         height = atoi(argv[8]);
         
+        //print args to the console
+        printf("numParticlesLight: %d\nnumParticlesMedium: %d\nnumParticlesLarge: %d\nnumSteps: %d\nsubSteps: %d\ntimeSubStep: %f\nWidth: %d\nHeight: %f\n",numParticlesLight,numParticleMedium,numParticleHeavy,numSteps,subSteps,timeSubStep, width,velocityLightMin);
         
         
-		//almost done, just save the image
-		//saveBMP(argv[9], image, width, height);
-	}
-	//all other nodes do this
-	else{
+        free(image);
+    }
 
-	}
 
-	free(image);
-
-	MPI_Finalize();
+	//MPI_Finalize();
 	return 0;
 }
