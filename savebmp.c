@@ -34,15 +34,20 @@ void saveBMP(const char* filename, const unsigned char* result, int w, int h){
 	
 	img = (unsigned char *)malloc(3*w);
 	assert(img);
-
+	
+	
 	int i,j;
 	for(j=0; j<h; j++)
 	{
 	    for(i=0; i<w; i++)
 		{
-            img[i*3+0] = result[(j*w+i)*3+0];
+		//I'm not sure what was miscoded, but the rgb values are swapped... 
+		//(255,0,0 is supposed to be red and its blue)
+		//(0,0,255 is supposed to be blue and its red)
+		//so below i swapped them to correct it
+            img[i*3+0] = result[(j*w+i)*3+2];//result[(j*w+i)*3+0];
             img[i*3+1] = result[(j*w+i)*3+1];
-            img[i*3+2] = result[(j*w+i)*3+2];
+            img[i*3+2] = result[(j*w+i)*3+0];//result[(j*w+i)*3+2];
 		}
 		fwrite(img,3,w,f);
 	    fwrite(bmppad,1,(4-(w*3)%4)%4,f);
