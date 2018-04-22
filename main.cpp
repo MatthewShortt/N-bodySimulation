@@ -149,6 +149,12 @@ int main(int argc, char* argv[]){
             printf("numParticlesLight: %d\nnumParticlesMedium: %d\nnumParticlesLarge: %d\nnumSteps: %d\nsubSteps: %d\ntimeSubStep: %f\nWidth: %d\nHeight: %d\n",numParticlesLight,numParticleMedium,numParticleHeavy,numSteps,subSteps,timeSubStep, width,height);
             
             
+            /* =====================================================================
+             
+                                            Setup
+             
+             ===================================================================== */
+            
             const int totalParticles=numParticlesLight+numParticleMedium+numParticleHeavy;
             
             int frameSize=width*height;
@@ -168,9 +174,9 @@ int main(int argc, char* argv[]){
             //create all three sizes of pixels
             int count=0;
             for(int i=0; i<numParticlesLight; i++){
-                int xVal = (int) (drand48() * (width-1));
-                int yVal = (int) (drand48() * (height-1));
-                int zVal = (int) (drand48() * (zplane));
+                double xVal = (drand48() * (width-1));
+                double yVal = (drand48() * (height-1));
+                double zVal = (drand48() * (zplane));
                 //printf("Coordinates X,Y,Z: %d %d %d\n", xVal, yVal, zVal);
                 particles[i] = vec3(xVal,yVal,zVal,255,0,0); //vec3(1,1,1,255,255,255);
                 
@@ -193,10 +199,7 @@ int main(int argc, char* argv[]){
                 particles[k] = vec3(xVal,yVal,zVal,0,0,255);//vec3(100,100,100,255,255,255);
                 
             }
-            
-            
-            
-            
+
             
             //write pixels onto screen
             for(int g=0;g<totalParticles;g++){
