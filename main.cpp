@@ -149,6 +149,12 @@ int main(int argc, char* argv[]){
             printf("numParticlesLight: %d\nnumParticlesMedium: %d\nnumParticlesLarge: %d\nnumSteps: %d\nsubSteps: %d\ntimeSubStep: %f\nWidth: %d\nHeight: %d\n",numParticlesLight,numParticleMedium,numParticleHeavy,numSteps,subSteps,timeSubStep, width,height);
             
             
+            /* =====================================================================
+             
+                                            Setup
+             
+             ===================================================================== */
+            
             const int totalParticles=numParticlesLight+numParticleMedium+numParticleHeavy;
             
             int frameSize=width*height;
@@ -164,39 +170,49 @@ int main(int argc, char* argv[]){
             }
             
             vec3 particles [totalParticles];
+            int count=0;
+            double velocity=0;
+            double mass=0;
+            double xVal = 0;
+            double yVal = 0;
+            double zVal = 0;
+            
             
             //create all three sizes of pixels
-            int count=0;
+            
             for(int i=0; i<numParticlesLight; i++){
-                int xVal = (int) (drand48() * (width-1));
-                int yVal = (int) (drand48() * (height-1));
-                int zVal = (int) (drand48() * (zplane));
+                velocity=drand48()*(velocityLightMax-velocityLightMin)+velocityLightMin;
+                mass=drand48()*(massLightMax-massLightMin)+massLightMin;
+                xVal = (drand48() * (width-1));
+                yVal = (drand48() * (height-1));
+                zVal = (drand48() * (zplane));
                 //printf("Coordinates X,Y,Z: %d %d %d\n", xVal, yVal, zVal);
-                particles[i] = vec3(xVal,yVal,zVal,255,0,0); //vec3(1,1,1,255,255,255);
+                particles[i] = vec3(xVal,yVal,zVal,255,0,0,mass,velocity); //vec3(1,1,1,255,255,255);
                 
             }
             count=numParticlesLight;
             
             for(int j=count; j<(numParticleMedium+count); j++){
-                int xVal = (int) (drand48() * (width-1));
-                int yVal = (int) (drand48() * (height-1));
-                int zVal = (int) (drand48() * (zplane));
-                particles[j] = vec3(xVal,yVal,zVal,0,255,0);//vec3(10,10,10,255,255,255);
+                velocity=drand48()*(velocityMediumMax-velocityMediumMin)+velocityMediumMin;
+                mass=drand48()*(massMediumMax-massMediumMin)+massMediumMin;
+                xVal = (drand48() * (width-1));
+                yVal = (drand48() * (height-1));
+                zVal = (drand48() * (zplane));
+                particles[j] = vec3(xVal,yVal,zVal,0,255,0,mass,velocity);//vec3(10,10,10,255,255,255);
                 
             }
             count=numParticlesLight+numParticleMedium;
             
             for(int k=count; k<(numParticleHeavy+count); k++){
-                int xVal = (int) (drand48() * (width-1));
-                int yVal = (int) (drand48() * (height-1));
-                int zVal = (int) (drand48() * (zplane));
-                particles[k] = vec3(xVal,yVal,zVal,0,0,255);//vec3(100,100,100,255,255,255);
+                velocity=drand48()*(velocityHeavyMax-velocityHeavyMin)+velocityHeavyMin;
+                mass=drand48()*(massHeavyMax-massHeavyMin)+massHeavyMin;
+                xVal = (drand48() * (width-1));
+                yVal = (drand48() * (height-1));
+                zVal = (drand48() * (zplane));
+                particles[k] = vec3(xVal,yVal,zVal,0,0,255,mass,velocity);//vec3(100,100,100,255,255,255);
                 
             }
-            
-            
-            
-            
+
             
             //write pixels onto screen
             for(int g=0;g<totalParticles;g++){
