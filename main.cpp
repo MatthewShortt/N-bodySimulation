@@ -14,34 +14,43 @@
 
 int main(int argc, char* argv[]){
     
+    int inputError = 0;
     
     if( argc != 10){
         printf("Usage: %s numParticlesLight numParticleMedium numParticleHeavy numSteps subSteps timeSubStep imageWidth imageHeight imageFilenamePrefix\n", argv[0]);
+        inputError = 1;
     }
     else if((int)atof(argv[1]) < 0){
         printf("Number of Light Particles can't be negative.\n");
+        inputError = 1;
     }
     else if((int) atof(argv[2]) < 0){
         printf("Number of Medium Particles can't be negative.\n");
+        inputError = 1;
     }
     else if((int) atof(argv[3]) < 0){
         printf("Number of Heavy Particles can't be negative.\n");
+        inputError = 1;
     }
     else if((int) atof(argv[4]) < 0){
         printf("Number of steps can't be negative.\n");
+        inputError = 1;
     }
     else if((int) atof(argv[5]) < 0){
         printf("Number of substeps can't be negative.\n");
+        inputError = 1;
     }
     else if((double) atof(argv[6]) <= 0){
-        printf("Time must be greater than 0 seconds.\n");
         printf("Time 1 be greater than 0 seconds.\n");
+        inputError = 1;
     }
     else if((int) atof(argv[7]) <= 0){
         printf("Image width must be greter than 0.\n");
+        inputError = 1;
     }
     else if((int) atof(argv[8]) <= 0){
         printf("Image height must be greter than 0.\n");
+        inputError = 1;
     }
     
     
@@ -111,60 +120,11 @@ int main(int argc, char* argv[]){
         int subSteps = 0;
         double timeSubStep;
         
-<<<<<<< HEAD
-
-    const int totalParticles=numParticlesLight+numParticleMedium+numParticleHeavy;
-    
-    int frameSize=width*height;
-    
-    //allocate space for pixel colours
-    image = (unsigned char *)malloc(3*frameSize);
-
-    //default all pixels to black/white 
-    for(int a=0; a<(3*frameSize);a++){//a+=3
-        image[a]=(unsigned char) 0;//0;
-        //image[a+1]=(unsigned char) 0;
-        //image[a+2]=(unsigned char) 0;
-    }   
-
-    vec3 particles [totalParticles];
-    
-    //create all three sizes of pixels
-    int count=0;
-    double velocity=0;
-    double mass=0;
-    double X=0;
-    double Y=0;
-    double Z=0;
-    
-    for(int i=0; i<numParticlesLight; i++){
-        velocity=drand48()*(velocityLightMax-velocityLightMin)+velocityLightMin;
-        mass=drand48()*(massLightMax-massLightMin)+massLightMin;
-        X=drand48()*(width);
-        Y=drand48()*(height);
-        Z=drand48()*(zplane);
-
-        //printf("this is the x %f, this is the y %f, this is the z %f \n",X,Y,Z);
-        particles[i] = vec3(X,Y,Z,255,255,255,mass,velocity); //vec3(1,1,1,255,255,255,mass,velocity);
-=======
         int width, height;
->>>>>>> dd9de02f3543ecadd5a588ce92a0db8715f94856
         
         
-<<<<<<< HEAD
-    for(int j=count; j<(numParticleMedium+count); j++){
-        velocity=drand48()*(velocityMediumMax-velocityMediumMin)+velocityMediumMin;
-        mass=drand48()*(massMediumMax-massMediumMin)+massMediumMin;
-        X=drand48()*(width);
-        Y=drand48()*(height);
-        Z=drand48()*(zplane);
-
-        //printf("this is the x %f, this is the y %f, this is the z %f \n",X,Y,Z);
-        particles[j] = vec3(X,Y,Z,255,255,255,mass,velocity);//vec3(10,10,10,255,255,255,mass,velocity);
-=======
         unsigned char* image;
 
->>>>>>> dd9de02f3543ecadd5a588ce92a0db8715f94856
         
         //root node stuff goes here
         if(my_rank == 0){
@@ -273,65 +233,14 @@ int main(int argc, char* argv[]){
             
         }
 
-<<<<<<< HEAD
-    for(int k=count; k<(numParticleHeavy+count); k++){
-        velocity=drand48()*(velocityHeavyMax-velocityHeavyMin)+velocityHeavyMin;
-        mass=drand48()*(massHeavyMax-massHeavyMin)+massHeavyMin;
-        X=drand48()*(width);
-        Y=drand48()*(height);
-        Z=drand48()*(zplane);
-
-        //printf("this is the x %f, this is the y %f, this is the z %f \n",X,Y,Z);
-        particles[k] = vec3(X,Y,Z,255,255,255,mass,velocity);//vec3(100,100,100,255,255,255,mass,velocity);
-        
-    }
-     
-    
-
-
-    //printf("testing \n");
-    //write pixels onto screen
-    for(int g=0;g<totalParticles;g++){
-        int xValue=(int) particles[g].getX();
-        int yValue=(int) particles[g].getY();
-        
-        //printf("this is the x %d, this is the y %d \n",xValue,yValue);        
-
-        image[(xValue*3)+(yValue*width*3)]=(unsigned char) particles[g].getR();
-        image[(xValue*3)+(yValue*width*3)+1]=(unsigned char) particles[g].getG();
-        image[(xValue*3)+(yValue*width*3)+2]=(unsigned char) particles[g].getB();
-
-
-        //printf("this is %d col %d %d %d  \n",g, particles[g].getR(),particles[g].getG(), particles[g].getB());
-=======
         
         MPI_Finalize();
         
     } else{
         printf("\n--> Program did not run do to input error. Please view message above and fix input arguments.\n");
->>>>>>> dd9de02f3543ecadd5a588ce92a0db8715f94856
     }
     
     
     
-<<<<<<< HEAD
-
-    //Equations of motion - performing steps and substeps
-    //at each substep calculate, at each step take a photo
-
-
-
-
-
-
-
-
-        free(image);
-    }
-
-
-    //MPI_Finalize();
-=======
->>>>>>> dd9de02f3543ecadd5a588ce92a0db8715f94856
     return 0;
 }
