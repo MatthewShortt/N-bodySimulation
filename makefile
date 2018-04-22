@@ -5,7 +5,7 @@ OBJECTS=$(SOURCES:.cpp=.o)
 
 SOURCES=main.cpp savebmp.c
 
-EXECUTABLE=x.project
+EXECUTABLE=project.x
 
 all: $(SOURCES) $(EXECUTABLE)
 
@@ -16,4 +16,4 @@ $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm *.o x.*
+	rm *.o *.x

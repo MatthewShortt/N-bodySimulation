@@ -26,8 +26,8 @@ double massHeavyMax = 15;
 
 
 //colours
-vec3 colourLight = vec3(0,0,1);
-vec3 colourMedium = vec3(0,1,0);
-vec3 colourHeavy = vec3(1,0,0);
+//vec3 colourLight = vec3(0,0,1);
+//vec3 colourMedium = vec3(0,1,0);
+//vec3 colourHeavy = vec3(1,0,0);
 
 #endif
