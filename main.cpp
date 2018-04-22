@@ -158,7 +158,7 @@ int main(int argc, char* argv[]){
             
             //default all pixels to white/black
             for(int a=0; a<(3*frameSize);a++){//a+=3
-                image[a]=(unsigned char) 255;//0;
+                image[a]=(unsigned char) 0;//0;
                 //image[a+1]=(unsigned char) 0;
                 //image[a+2]=(unsigned char) 0;
             }
@@ -168,22 +168,29 @@ int main(int argc, char* argv[]){
             //create all three sizes of pixels
             int count=0;
             for(int i=0; i<numParticlesLight; i++){
-                
-                particles[i] = vec3(1,1,1,255,0,0); //vec3(1,1,1,255,255,255);
+                int xVal = (int) (drand48() * (width-1));
+                int yVal = (int) (drand48() * (height-1));
+                int zVal = (int) (drand48() * (zplane));
+                //printf("Coordinates X,Y,Z: %d %d %d\n", xVal, yVal, zVal);
+                particles[i] = vec3(xVal,yVal,zVal,255,0,0); //vec3(1,1,1,255,255,255);
                 
             }
             count=numParticlesLight;
             
             for(int j=count; j<(numParticleMedium+count); j++){
-                
-                particles[j] = vec3(10,10,10,0,255,0);//vec3(10,10,10,255,255,255);
+                int xVal = (int) (drand48() * (width-1));
+                int yVal = (int) (drand48() * (height-1));
+                int zVal = (int) (drand48() * (zplane));
+                particles[j] = vec3(xVal,yVal,zVal,0,255,0);//vec3(10,10,10,255,255,255);
                 
             }
             count=numParticlesLight+numParticleMedium;
             
             for(int k=count; k<(numParticleHeavy+count); k++){
-                
-                particles[k] = vec3(100,100,100,0,0,255);//vec3(100,100,100,255,255,255);
+                int xVal = (int) (drand48() * (width-1));
+                int yVal = (int) (drand48() * (height-1));
+                int zVal = (int) (drand48() * (zplane));
+                particles[k] = vec3(xVal,yVal,zVal,0,0,255);//vec3(100,100,100,255,255,255);
                 
             }
             
@@ -201,7 +208,7 @@ int main(int argc, char* argv[]){
                 image[(xValue*3)+(yValue*width*3)+2]=(unsigned char) particles[g].getB();
                 
                 
-                printf("this is %d col %d %d %d  \n",g, particles[g].getR(),particles[g].getG(), particles[g].getB());
+                printf("this is %d col %d %d %d %f %f %f \n",g, particles[g].getR(),particles[g].getG(), particles[g].getB(), particles[g].getX(), particles[g].getY(), particles[g].getZ());
             }
             
             char file[20];
