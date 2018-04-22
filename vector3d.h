@@ -9,14 +9,17 @@ public:
 	// Data
 	double x, y, z;
 	int r, g, b;
+	double mass, velocity;
 		
 
 	// Ctors
-	vec3( double InX, double InY, double InZ, int InR, int InG, int InB ) : x( InX ), y( InY ), z( InZ )
+	vec3( double InX, double InY, double InZ, int InR, int InG, int InB, double InMass, double InVelocity ) : x( InX ), y( InY ), z( InZ )
 		{
 			r=InR;
 			g=InG;
 			b=InB;
+			mass=InMass;
+			velocity=InVelocity;
 		}
 
 	void SetDoublePoint( const double *v ) {  x=v[0]; y=v[1]; z=v[2]; }
@@ -33,47 +36,47 @@ public:
 
 	inline vec3 operator+ (const vec3& V2) const 
 		{
-		return vec3( x + V2.x,  y + V2.y,  z + V2.z, r, g, b);
+		return vec3( x + V2.x,  y + V2.y,  z + V2.z, r, g, b, mass, velocity);
 		}
 
 	inline vec3 operator- (const vec3& V2) const
 		{
-		return vec3( x - V2.x,  y - V2.y,  z - V2.z, r, g, b);
+		return vec3( x - V2.x,  y - V2.y,  z - V2.z, r, g, b, mass, velocity);
 		}
 	inline vec3 SubP(const double *v) const
 		{
-		  return vec3( x - v[0],  y - v[1],  z - v[2], r, g, b);
+		  return vec3( x - v[0],  y - v[1],  z - v[2], r, g, b, mass, velocity);
 		}
 
 	inline vec3 operator- ( ) const
 		{
-		return vec3(-x, -y, -z, r, g, b);
+		return vec3(-x, -y, -z, r, g, b, mass, velocity);
 		}
 
 	inline vec3 operator/ (double S ) const
 		{
 		double fInv = 1.0 / S;
-		return vec3 (x * fInv , y * fInv, z * fInv, r, g, b);
+		return vec3 (x * fInv , y * fInv, z * fInv, r, g, b, mass, velocity);
 		}
 	inline vec3 operator/ (const vec3& V2) const
 		{
-		return vec3 (x / V2.x,  y / V2.y,  z / V2.z, r, g, b);
+		return vec3 (x / V2.x,  y / V2.y,  z / V2.z, r, g, b, mass, velocity);
 		}
 	inline vec3 operator* (const vec3& V2) const
 		{
-		return vec3 (x * V2.x,  y * V2.y,  z * V2.z, r, g, b);
+		return vec3 (x * V2.x,  y * V2.y,  z * V2.z, r, g, b, mass, velocity);
 		}
 	inline vec3 operator* (double S) const
 		{
-		return vec3 (x * S,  y * S,  z * S, r, g, b);
+		return vec3 (x * S,  y * S,  z * S, r, g, b, mass, velocity);
 		}
 	inline vec3 operator+ (double S) const
 		{
-		return vec3 (x + S,  y + S,  z + S, r, g, b);
+		return vec3 (x + S,  y + S,  z + S, r, g, b, mass, velocity);
 		}
 	inline vec3 operator- (double S) const
 		{
-		return vec3 (x - S,  y - S,  z - S, r, g, b);
+		return vec3 (x - S,  y - S,  z - S, r, g, b, mass, velocity);
 		}
 
 	inline void operator+= ( const vec3& V2 )
@@ -121,6 +124,18 @@ public:
 		{
 		return z;
 		}
+	inline double getMass()
+		{
+		return mass;
+		}
+	inline double getVelocity()
+		{
+		return velocity;
+		}
+	inline void setVelocity(double newVelocity)
+		{
+		velocity=newVelocity;
+		}
 	
 	inline double Dot( const vec3 &V1 ) const
 		{
@@ -150,7 +165,7 @@ public:
 
 inline vec3 SubtractDoubleDouble(const double *d1, const double *d2)
 {
-  return vec3(d1[0]-d2[0], d1[1]-d2[1], d1[2]-d2[2], '0', '0', '0');
+  return vec3(d1[0]-d2[0], d1[1]-d2[1], d1[2]-d2[2], '0', '0', '0', 0, 0);
 }
 
 inline double clamp(double d, double min, double max)

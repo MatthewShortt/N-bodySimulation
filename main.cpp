@@ -128,9 +128,9 @@ int main(int argc, char* argv[]){
     //allocate space for pixel colours
     image = (unsigned char *)malloc(3*frameSize);
 
-    //default all pixels to white/black 
+    //default all pixels to black/white 
     for(int a=0; a<(3*frameSize);a++){//a+=3
-        image[a]=(unsigned char) 255;//0;
+        image[a]=(unsigned char) 0;//0;
         //image[a+1]=(unsigned char) 0;
         //image[a+2]=(unsigned char) 0;
     }   
@@ -139,41 +139,67 @@ int main(int argc, char* argv[]){
     
     //create all three sizes of pixels
     int count=0;
+    double velocity=0;
+    double mass=0;
+    double X=0;
+    double Y=0;
+    double Z=0;
+    
     for(int i=0; i<numParticlesLight; i++){
+        velocity=drand48()*(velocityLightMax-velocityLightMin)+velocityLightMin;
+        mass=drand48()*(massLightMax-massLightMin)+massLightMin;
+        X=drand48()*(width);
+        Y=drand48()*(height);
+        Z=drand48()*(zplane);
 
-        particles[i] = vec3(1,1,1,255,0,0); //vec3(1,1,1,255,255,255);
+        //printf("this is the x %f, this is the y %f, this is the z %f \n",X,Y,Z);
+        particles[i] = vec3(X,Y,Z,255,255,255,mass,velocity); //vec3(1,1,1,255,255,255,mass,velocity);
         
     }
     count=numParticlesLight;
         
     for(int j=count; j<(numParticleMedium+count); j++){
+        velocity=drand48()*(velocityMediumMax-velocityMediumMin)+velocityMediumMin;
+        mass=drand48()*(massMediumMax-massMediumMin)+massMediumMin;
+        X=drand48()*(width);
+        Y=drand48()*(height);
+        Z=drand48()*(zplane);
 
-        particles[j] = vec3(10,10,10,0,255,0);//vec3(10,10,10,255,255,255);
+        //printf("this is the x %f, this is the y %f, this is the z %f \n",X,Y,Z);
+        particles[j] = vec3(X,Y,Z,255,255,255,mass,velocity);//vec3(10,10,10,255,255,255,mass,velocity);
         
     }
     count=numParticlesLight+numParticleMedium;
 
     for(int k=count; k<(numParticleHeavy+count); k++){
+        velocity=drand48()*(velocityHeavyMax-velocityHeavyMin)+velocityHeavyMin;
+        mass=drand48()*(massHeavyMax-massHeavyMin)+massHeavyMin;
+        X=drand48()*(width);
+        Y=drand48()*(height);
+        Z=drand48()*(zplane);
 
-        particles[k] = vec3(100,100,100,0,0,255);//vec3(100,100,100,255,255,255);
+        //printf("this is the x %f, this is the y %f, this is the z %f \n",X,Y,Z);
+        particles[k] = vec3(X,Y,Z,255,255,255,mass,velocity);//vec3(100,100,100,255,255,255,mass,velocity);
         
     }
      
     
 
 
-
+    //printf("testing \n");
     //write pixels onto screen
     for(int g=0;g<totalParticles;g++){
         int xValue=(int) particles[g].getX();
         int yValue=(int) particles[g].getY();
+        
+        //printf("this is the x %d, this is the y %d \n",xValue,yValue);        
 
         image[(xValue*3)+(yValue*width*3)]=(unsigned char) particles[g].getR();
         image[(xValue*3)+(yValue*width*3)+1]=(unsigned char) particles[g].getG();
         image[(xValue*3)+(yValue*width*3)+2]=(unsigned char) particles[g].getB();
 
 
-        printf("this is %d col %d %d %d  \n",g, particles[g].getR(),particles[g].getG(), particles[g].getB());
+        //printf("this is %d col %d %d %d  \n",g, particles[g].getR(),particles[g].getG(), particles[g].getB());
     }
     
     char file[20];
@@ -187,7 +213,18 @@ int main(int argc, char* argv[]){
     saveBMP (filename, result, width, height);
     //saveBMP      (const char* filename, const unsigned char* image, int width, int height);
     
-        //free(image);
+
+    //Equations of motion - performing steps and substeps
+    //at each substep calculate, at each step take a photo
+
+
+
+
+
+
+
+
+        free(image);
     }
 
 
