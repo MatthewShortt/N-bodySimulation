@@ -161,21 +161,21 @@ int main(int argc, char* argv[]){
             int frameSize=width*height;
             
             //allocate space for pixel colours
-            image = (unsigned char *)malloc(3*frameSize);
+            image = (unsigned char *)malloc(3*frameSize*sizeof(unsigned char));
             
             //default all pixels to white/black
             
-            memset(image, 0, sizeof(unsigned char) * 3 * frameSize);
+            //memset(image, 0, sizeof(unsigned char) * 3 * frameSize);
 
             
             
             
             
-//            for(int a=0; a<(3*frameSize);a++){//a+=3
-//                image[a]=(unsigned char) 0;//0;
-//                //image[a+1]=(unsigned char) 0;
-//                //image[a+2]=(unsigned char) 0;
-//            }
+            for(int a=0; a<(3*frameSize);a++){//a+=3
+                image[a]=(unsigned char) 0;//0;
+                //image[a+1]=(unsigned char) 0;
+                //image[a+2]=(unsigned char) 0;
+            }
             
             vec3 particles [totalParticles];
             int count=0;
@@ -280,8 +280,14 @@ int main(int argc, char* argv[]){
             //double forcesArr = (double *)malloc(totalParticles*totalParticles);
             
             double * forcesArr;
-            forcesArr = (double *)malloc(totalParticles*totalParticles);
-            memset(forcesArr, 0, sizeof(double) * totalParticles*totalParticles);
+            forcesArr = (double *)malloc(totalParticles*totalParticles*sizeof(double));
+            
+            
+            //memset(forcesArr, 0, sizeof(double) * totalParticles*totalParticles);
+            for(int i = 0; i < (totalParticles*totalParticles) ; i++){
+                forcesArr[i] = 0;
+            }
+            
             double currentForce = 0;
             //forces = totalParticles*totalParticles*sizeof(double);
             
@@ -294,6 +300,7 @@ int main(int argc, char* argv[]){
                         for(int innerDot = outerDot+1; innerDot < totalParticles; innerDot++){
                             
                             currentForce = particles[innerDot].getMass()/(abs(outerDotMagSquared - particles[innerDot].MagnitudeSquared()));
+                            //printf("currentForce: ");
                             forcesArr[innerDot + width*outerDot] = currentForce;
                             forcesArr[outerDot + width*innerDot] = -1 * currentForce;
                             
@@ -316,8 +323,21 @@ int main(int argc, char* argv[]){
                 }
                 
                 totForce = G*forces*currentMass;
+                
+                
+                
+                
                 //printf("Position before -> X: %f \t Y: %f \t Z: %f --- Direction: %d \t\t", particles[index].getX(), particles[index].getY(), particles[index].getZ(), particles[index].getDirection());
+                
+                
+                
+                
                 particles[index].setPosition( particles[index], timeSubStep );
+                
+                
+                
+                
+                
                 //printf("Position AFTER -> X: %f \t Y: %f \t Z: %f\n", particles[index].getX(), particles[index].getY(), particles[index].getZ());
 //                if(particles[index].getDirection() == 0){
 //                    printf("getX(): %f\n", particles[index].getX());
@@ -325,7 +345,13 @@ int main(int argc, char* argv[]){
                 
                 //particles[index].getVelocity() + ((timeSubStep * totForce) / currentMass)
                 printf("force: %f  --- first velocity: %f    \t", totForce, particles[index].getVelocity());
+                
+                
                 particles[index].setVelocity( particles[index], timeSubStep, totForce );
+                
+                
+                
+                
                 printf("after: %f \n", particles[index].getVelocity());
             }
             
