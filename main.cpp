@@ -53,54 +53,6 @@ int main(int argc, char* argv[]){
         printf("Image height must be greter than 0.\n");
         inputError = 1;
     }
-    
-    
-    
-//    MPI_Init(&argc,&argv);
-//    
-//    int p, my_rank;
-//    
-//    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-//    MPI_Comm_size(MPI_COMM_WORLD, &p);
-//    
-//    //variables
-//    int numParticlesLight = 0;
-//    int numParticleMedium = 0;
-//    int numParticleHeavy = 0;
-//    
-//    int numSteps = 0;
-//    int subSteps = 0;
-//    double timeSubStep;
-//    
-//    int width, height;
-//    
-//    
-//    unsigned char* image;
-    
-//      //root node stuff goes here
-//      if(my_rank == 0){
-//            numParticlesLight = atoi(argv[1]);
-//            numParticleMedium = atoi(argv[2]);
-//            numParticleHeavy  = atoi(argv[3]);
-//    
-//            numSteps = atoi(argv[4]);
-//            subSteps = atoi(argv[5]);
-//    
-//            timeSubStep = (double) atof(argv[6]);
-//    
-//            width = atoi(argv[7]);
-//            height = atoi(argv[8]);
-//    
-//    
-//    
-//          //almost done, just save the image
-//          //saveBMP(argv[9], image, width, height);
-//      }
-//      //all other nodes do this
-//      else{
-//    
-//      }
-    
    
     
     if(inputError == 0){
@@ -390,7 +342,6 @@ int main(int argc, char* argv[]){
                 
                 //GENERATE FRAME NAME FOR IMAGE
                 std::string one=argv[9];
-                //std::string two="_0000";
                 std::string three= std::to_string(step+1);
                 std::string four=".bmp";
                 
@@ -403,21 +354,10 @@ int main(int argc, char* argv[]){
                 
                 
             }
-            
-
-
-            
-            
-
-            
-            
-            //saveBMP      (const char* filename, const unsigned char* image, int width, int height);
+    
             free(forcesArr);
             free(image);
 
-            
-            //almost done, just save the image
-            //saveBMP(argv[9], image, width, height);
         }
         //all other nodes do this
         else{
