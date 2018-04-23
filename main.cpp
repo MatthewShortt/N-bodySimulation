@@ -56,7 +56,10 @@ int main(int argc, char* argv[]){
    
     
     if(inputError == 0){
-        
+        double start=0;
+        double end=0;
+        double timeRequired=0;
+        double subStepTimes [atoi(argv[4])*atoi(argv[5])];
         MPI_Init(&argc,&argv);
         
         int p, my_rank;
@@ -153,7 +156,7 @@ int main(int argc, char* argv[]){
             
             
             
-            const double G = -0.00000000006673;
+            //const double G = -0.00000000006673;
             
             //create all three sizes of pixels
             
@@ -251,7 +254,9 @@ int main(int argc, char* argv[]){
                 
                 //SUBSTEP
                 for(int subStep = 0; subStep < numSubSteps; subStep++){
-                    
+
+                    start=MPI_Wtime();
+
                     //CALCULATING FORCES AT EACH SUBSTEP FOR EACH PARTICLE
                     for(int outerDot = 0; outerDot < totalParticles; outerDot++){
                         currentForce = 0;
@@ -290,6 +295,13 @@ int main(int argc, char* argv[]){
                         
                         particles[index].setVelocity( particles[index], timeSubStep, totForce );
                     }
+
+                    end=MPI_Wtime();
+                    timeRequired=end-start;
+                    subStepTimes[step*numSubSteps+subStep]=timeRequired;
+                    start=0;
+                    end=0;
+                    timeRequired=0;
                 }
                 
                 //ALL PIXELS BLACK
@@ -357,6 +369,26 @@ int main(int argc, char* argv[]){
     
             free(forcesArr);
             free(image);
+        
+        double minTime=1000;
+        double maxTime=0;
+        double countTime=0;
+        for(int i=0;i<(numSteps*numSubSteps);i++){
+            countTime+=subStepTimes[i];
+            printf("this is time: %f \n",subStepTimes[i]);
+            if(subStepTimes[i]<minTime){
+                minTime=subStepTimes[i];
+            }
+            if(subStepTimes[i]>maxTime){
+                maxTime=subStepTimes[i];
+            }
+        }
+
+        countTime=countTime/(numSteps*numSubSteps);
+        
+        printf("min time of substeps: %f \n",minTime);
+        printf("max time of substeps: %f \n",maxTime);
+        printf("average time of substeps: %f \n", countTime);
 
         }
         //all other nodes do this
