@@ -372,7 +372,7 @@ int main(int argc, char* argv[]){
                         two += "_";
                         break;
                     case 4:
-                        two += "_00";
+                        two += "_0";
                         break;
                     case 3:
                         two += "_00";
