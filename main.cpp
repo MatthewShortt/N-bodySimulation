@@ -289,110 +289,96 @@ int main(int argc, char* argv[]){
             }
             
             double currentForce = 0;
-            //forces = totalParticles*totalParticles*sizeof(double);
-            
-            for(int step = 0; step < numSteps; step++){
-                for(int subStep = 0; subStep < numSubSteps; subStep++){
-                    for(int outerDot = 0; outerDot < totalParticles; outerDot++){
-                        currentForce = 0;
-                        outerDotMagSquared = particles[outerDot].MagnitudeSquared();
-                        
-                        for(int innerDot = outerDot+1; innerDot < totalParticles; innerDot++){
-                            
-                            currentForce = particles[innerDot].getMass()/(abs(outerDotMagSquared - particles[innerDot].MagnitudeSquared()));
-//                            printf("currentForce: %f  \tparticles[innerDot].getMass(): %f  \touterDotMagSquared: %f  \tinnerDotMag: %f  \n",currentForce ,particles[innerDot].getMass() ,outerDotMagSquared , particles[innerDot].MagnitudeSquared());
-                            forcesArr[innerDot + totalParticles*outerDot] = currentForce;
-                            forcesArr[outerDot + totalParticles*innerDot] = -1 * currentForce;
-                            
-                            //printf("forcesArr[innerDot + width*outerDot]: %f  \tforcesArr[outerDot + width*innerDot]: %f\n",forcesArr[innerDot + width*outerDot] ,forcesArr[outerDot + width*innerDot]);
-                            
-                        }
-                        
-                    }
-                }
-            }
-            
             
             double forces = 0;
             double totForce =  0;
             double currentMass = 0;
-            for(int index = 0; index < totalParticles; index++){
-                currentMass = particles[index].getMass();
-                totForce = 0;
-                forces = 0;
-                for(int length = 0; length < totalParticles; length ++){
-                    forces += forcesArr[length + index*totalParticles];
+            
+            // STEP
+            for(int step = 0; step < numSteps; step++){
+                
+                //SUBSTEP
+                for(int subStep = 0; subStep < numSubSteps; subStep++){
+                    
+                    //CALCULATING FORCES AT EACH SUBSTEP FOR EACH PARTICLE
+                    for(int outerDot = 0; outerDot < totalParticles; outerDot++){
+                        currentForce = 0;
+                        outerDotMagSquared = particles[outerDot].MagnitudeSquared();
+                        
+                        //SUMMING THE FORCES OF INNERDOT PARTICLES ACTING UPON OUTERDOT PARTICLES
+                        for(int innerDot = outerDot+1; innerDot < totalParticles; innerDot++){
+                            
+                            currentForce = particles[innerDot].getMass()/(abs(outerDotMagSquared - particles[innerDot].MagnitudeSquared()));
+                            
+                            forcesArr[innerDot + totalParticles*outerDot] = currentForce;
+                            forcesArr[outerDot + totalParticles*innerDot] = -1 * currentForce;
+                            
+                        }
+                        
+                    }
+                    
+                    //RECALCULATING POSITION AND VELOCITY FOR EACH PARTICLE AT EACH SUBSTEP
+                    forces = 0;
+                    totForce =  0;
+                    currentMass = 0;
+                    for(int index = 0; index < totalParticles; index++){
+                        currentMass = particles[index].getMass();
+                        totForce = 0;
+                        forces = 0;
+                        for(int length = 0; length < totalParticles; length ++){
+                            forces += forcesArr[length + index*totalParticles];
+                        }
+                        
+                        totForce = forces*currentMass;
+                        if(totForce < epsilon){
+                            totForce = epsilon;
+                        }
+                        
+                        particles[index].setPosition( particles[index], timeSubStep );
+                        
+                        particles[index].setVelocity( particles[index], timeSubStep, totForce );
+                    }
                 }
                 
-                
-                totForce = forces*currentMass;
-                if(totForce < epsilon){
-                    totForce = epsilon;
+                //ALL PIXELS BLACK
+                for(int a=0; a<(3*frameSize);a++){
+                    image[a]=(unsigned char) 0; //all pixels return to black
                 }
                 
-                
-                
-                //printf("Position before -> X: %f \t Y: %f \t Z: %f --- Direction: %d \t\t", particles[index].getX(), particles[index].getY(), particles[index].getZ(), particles[index].getDirection());
-                
-                
-                
-                
-                particles[index].setPosition( particles[index], timeSubStep );
-                
-                
-                
-                
-                
-                //printf("Position AFTER -> X: %f \t Y: %f \t Z: %f\n", particles[index].getX(), particles[index].getY(), particles[index].getZ());
-//                if(particles[index].getDirection() == 0){
-//                    printf("getX(): %f\n", particles[index].getX());
-//                }
-                
-                //particles[index].getVelocity() + ((timeSubStep * totForce) / currentMass)
-                
-                //if(index%5 == 0){
-                    //printf("force: %f  --- first velocity: %f    \t", totForce, particles[index].getVelocity());
-                //}
-                //printf("force: %f  --- first velocity: %f    \t", totForce, particles[index].getVelocity());
-                
-                
-                particles[index].setVelocity( particles[index], timeSubStep, totForce );
-                
-                
-                
-                //if(index%5 == 0){
-                    //printf("after: %f \n", particles[index].getVelocity());
-                //}
-            }
-            
-            for(int a=0; a<(3*frameSize);a++){//a+=3
-                image[a]=(unsigned char) 0;//0;
-                //image[a+1]=(unsigned char) 0;
-                //image[a+2]=(unsigned char) 0;
-            }
-            
-            
-            //write pixels onto screen
-            for(int g=0;g<totalParticles;g++){
-                int xValue=(int) particles[g].getX();
-                int yValue=(int) particles[g].getY();
-                if(!(particles[g].getX() > width || particles[g].getX() < 0 || particles[g].getY() > height || particles[g].getY() < 0)){
-                    image[(xValue*3)+(yValue*width*3)]=(unsigned char) particles[g].getR();
-                    image[(xValue*3)+(yValue*width*3)+1]=(unsigned char) particles[g].getG();
-                    image[(xValue*3)+(yValue*width*3)+2]=(unsigned char) particles[g].getB();
+                //write pixels onto screen
+                for(int g=0;g<totalParticles;g++){
+                    int xValue=(int) particles[g].getX();
+                    int yValue=(int) particles[g].getY();
+                    if(!(particles[g].getX() > width || particles[g].getX() < 0 || particles[g].getY() > height || particles[g].getY() < 0)){
+                        image[(xValue*3)+(yValue*width*3)]=(unsigned char) particles[g].getR();
+                        image[(xValue*3)+(yValue*width*3)+1]=(unsigned char) particles[g].getG();
+                        image[(xValue*3)+(yValue*width*3)+2]=(unsigned char) particles[g].getB();
+                    }
+                    
                 }
                 
+                std::string one=argv[9];
+                std::string two="_0000";
+                std::string three= std::to_string(step+1);
+                std::string four=".bmp";
+                
+                std::string resultat= one+two+three+four;
+                
+                const char* filename1 = resultat.c_str();
+                
+                const unsigned char* result1 = (image);
+                saveBMP (filename1, result1, width, height);
+                
+                
             }
             
-            char file1[20];
-            strcpy(file1, argv[9]);
-            strcat(file1,"_00001.bmp");
-            const char* filename1 = file1;
+
+
             
             
-            //printf("this is arg 9: %s %s %s \n", argv[9],argv[8], argv[7]);
-            const unsigned char* result1 = (image);
-            saveBMP (filename1, result1, width, height);
+
+            
+            
             //saveBMP      (const char* filename, const unsigned char* image, int width, int height);
             free(forcesArr);
             free(image);
