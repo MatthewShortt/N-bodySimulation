@@ -5,6 +5,7 @@
 
 #include <mpi.h>
 #include <math.h>
+#include <cmath>
 
 #include "vector3d.h"
 #include "savebmp.h"
@@ -117,7 +118,7 @@ int main(int argc, char* argv[]){
         int numParticleHeavy = 0;
         
         int numSteps = 0;
-        int subSteps = 0;
+        int numSubSteps = 0;
         double timeSubStep;
         
         int width, height;
@@ -135,7 +136,7 @@ int main(int argc, char* argv[]){
             numParticleHeavy  = atoi(argv[3]);
             
             numSteps = atoi(argv[4]);
-            subSteps = atoi(argv[5]);
+            numSubSteps = atoi(argv[5]);
             
             timeSubStep = (double) atof(argv[6]);
             
@@ -146,7 +147,7 @@ int main(int argc, char* argv[]){
             const int zplane=100;
             
             //print args to the console
-            printf("numParticlesLight: %d\nnumParticlesMedium: %d\nnumParticlesLarge: %d\nnumSteps: %d\nsubSteps: %d\ntimeSubStep: %f\nWidth: %d\nHeight: %d\n",numParticlesLight,numParticleMedium,numParticleHeavy,numSteps,subSteps,timeSubStep, width,height);
+            printf("numParticlesLight: %d\nnumParticlesMedium: %d\nnumParticlesLarge: %d\nnumSteps: %d\nsubSteps: %d\ntimeSubStep: %f\nWidth: %d\nHeight: %d\n",numParticlesLight,numParticleMedium,numParticleHeavy,numSteps,numSubSteps,timeSubStep, width,height);
             
             
             /* =====================================================================
@@ -163,11 +164,18 @@ int main(int argc, char* argv[]){
             image = (unsigned char *)malloc(3*frameSize);
             
             //default all pixels to white/black
-            for(int a=0; a<(3*frameSize);a++){//a+=3
-                image[a]=(unsigned char) 0;//0;
-                //image[a+1]=(unsigned char) 0;
-                //image[a+2]=(unsigned char) 0;
-            }
+            
+            memset(image, 0, sizeof(unsigned char) * 3 * frameSize);
+
+            
+            
+            
+            
+//            for(int a=0; a<(3*frameSize);a++){//a+=3
+//                image[a]=(unsigned char) 0;//0;
+//                //image[a+1]=(unsigned char) 0;
+//                //image[a+2]=(unsigned char) 0;
+//            }
             
             vec3 particles [totalParticles];
             int count=0;
@@ -176,7 +184,24 @@ int main(int argc, char* argv[]){
             double xVal = 0;
             double yVal = 0;
             double zVal = 0;
+            int direction = 0;
             
+            /*  === Directions Layout ===
+             
+             x       y       z     dir (int)
+             1       0       0  --> 0
+             0       1       0  --> 1
+             0       0       1  --> 2
+             1       1       0  --> 3
+             1       0       1  --> 4
+             0       1       1  --> 5
+             1       1       1  --> 6
+             
+             ================ */
+            
+            
+            
+            const double G = -0.00000000006673;
             
             //create all three sizes of pixels
             
@@ -186,8 +211,9 @@ int main(int argc, char* argv[]){
                 xVal = (drand48() * (width-1));
                 yVal = (drand48() * (height-1));
                 zVal = (drand48() * (zplane));
+                direction = (int) (drand48() * 6.99);
                 //printf("Coordinates X,Y,Z: %d %d %d\n", xVal, yVal, zVal);
-                particles[i] = vec3(xVal,yVal,zVal,255,0,0,mass,velocity); //vec3(1,1,1,255,255,255);
+                particles[i] = vec3(xVal,yVal,zVal,255,0,0,mass,velocity,direction); //vec3(1,1,1,255,255,255);
                 
             }
             count=numParticlesLight;
@@ -198,7 +224,8 @@ int main(int argc, char* argv[]){
                 xVal = (drand48() * (width-1));
                 yVal = (drand48() * (height-1));
                 zVal = (drand48() * (zplane));
-                particles[j] = vec3(xVal,yVal,zVal,0,255,0,mass,velocity);//vec3(10,10,10,255,255,255);
+                direction = (int) (drand48() * 6.99);
+                particles[j] = vec3(xVal,yVal,zVal,0,255,0,mass,velocity,direction);//vec3(10,10,10,255,255,255);
                 
             }
             count=numParticlesLight+numParticleMedium;
@@ -209,7 +236,8 @@ int main(int argc, char* argv[]){
                 xVal = (drand48() * (width-1));
                 yVal = (drand48() * (height-1));
                 zVal = (drand48() * (zplane));
-                particles[k] = vec3(xVal,yVal,zVal,0,0,255,mass,velocity);//vec3(100,100,100,255,255,255);
+                direction = (int) (drand48() * 6.99);
+                particles[k] = vec3(xVal,yVal,zVal,0,0,255,mass,velocity,direction);//vec3(100,100,100,255,255,255);
                 
             }
 
@@ -218,13 +246,10 @@ int main(int argc, char* argv[]){
             for(int g=0;g<totalParticles;g++){
                 int xValue=(int) particles[g].getX();
                 int yValue=(int) particles[g].getY();
-                
                 image[(xValue*3)+(yValue*width*3)]=(unsigned char) particles[g].getR();
                 image[(xValue*3)+(yValue*width*3)+1]=(unsigned char) particles[g].getG();
                 image[(xValue*3)+(yValue*width*3)+2]=(unsigned char) particles[g].getB();
                 
-                
-                printf("this is %d col %d %d %d %f %f %f \n",g, particles[g].getR(),particles[g].getG(), particles[g].getB(), particles[g].getX(), particles[g].getY(), particles[g].getZ());
             }
             
             char file[20];
@@ -236,9 +261,105 @@ int main(int argc, char* argv[]){
             //printf("this is arg 9: %s %s %s \n", argv[9],argv[8], argv[7]);
             const unsigned char* result = (image);
             saveBMP (filename, result, width, height);
-            //saveBMP      (const char* filename, const unsigned char* image, int width, int height);
             
-            //free(image);
+            
+            
+            
+            
+            /* =====================================================================
+             
+             Computing velocitites and positions for next frame
+             
+             ===================================================================== */
+            
+            
+            
+            
+            
+            double outerDotMagSquared = 0;
+            //double forcesArr = (double *)malloc(totalParticles*totalParticles);
+            
+            double * forcesArr;
+            forcesArr = (double *)malloc(totalParticles*totalParticles);
+            memset(forcesArr, 0, sizeof(double) * totalParticles*totalParticles);
+            double currentForce = 0;
+            //forces = totalParticles*totalParticles*sizeof(double);
+            
+            for(int step = 0; step < numSteps; step++){
+                for(int subStep = 0; subStep < numSubSteps; subStep++){
+                    for(int outerDot = 0; outerDot < totalParticles; outerDot++){
+                        currentForce = 0;
+                        outerDotMagSquared = particles[outerDot].MagnitudeSquared();
+                        
+                        for(int innerDot = outerDot+1; innerDot < totalParticles; innerDot++){
+                            
+                            currentForce = particles[innerDot].getMass()/(abs(outerDotMagSquared - particles[innerDot].MagnitudeSquared()));
+                            forcesArr[innerDot + width*outerDot] = currentForce;
+                            forcesArr[outerDot + width*innerDot] = -1 * currentForce;
+                            
+                        }
+                        
+                    }
+                }
+            }
+            
+            
+            double forces = 0;
+            double totForce =  0;
+            double currentMass = 0;
+            for(int index = 0; index < totalParticles; index++){
+                currentMass = particles[index].getMass();
+                totForce = 0;
+                forces = 0;
+                for(int length = 0; length < width; length ++){
+                    forces += forcesArr[length + index*width];
+                }
+                
+                totForce = G*forces*currentMass;
+                //printf("Position before -> X: %f \t Y: %f \t Z: %f --- Direction: %d \t\t", particles[index].getX(), particles[index].getY(), particles[index].getZ(), particles[index].getDirection());
+                particles[index].setPosition( particles[index], timeSubStep );
+                //printf("Position AFTER -> X: %f \t Y: %f \t Z: %f\n", particles[index].getX(), particles[index].getY(), particles[index].getZ());
+//                if(particles[index].getDirection() == 0){
+//                    printf("getX(): %f\n", particles[index].getX());
+//                }
+                
+                //particles[index].getVelocity() + ((timeSubStep * totForce) / currentMass)
+                printf("force: %f  --- first velocity: %f    \t", totForce, particles[index].getVelocity());
+                particles[index].setVelocity( particles[index], timeSubStep, totForce );
+                printf("after: %f \n", particles[index].getVelocity());
+            }
+            
+            for(int a=0; a<(3*frameSize);a++){//a+=3
+                image[a]=(unsigned char) 0;//0;
+                //image[a+1]=(unsigned char) 0;
+                //image[a+2]=(unsigned char) 0;
+            }
+            
+            
+            //write pixels onto screen
+            for(int g=0;g<totalParticles;g++){
+                int xValue=(int) particles[g].getX();
+                int yValue=(int) particles[g].getY();
+                if(!(particles[g].getX() > width || particles[g].getX() < 0 || particles[g].getY() > height || particles[g].getY() < 0)){
+                    image[(xValue*3)+(yValue*width*3)]=(unsigned char) particles[g].getR();
+                    image[(xValue*3)+(yValue*width*3)+1]=(unsigned char) particles[g].getG();
+                    image[(xValue*3)+(yValue*width*3)+2]=(unsigned char) particles[g].getB();
+                }
+                
+            }
+            
+            char file1[20];
+            strcpy(file1, argv[9]);
+            strcat(file1,"_00001.bmp");
+            const char* filename1 = file1;
+            
+            
+            //printf("this is arg 9: %s %s %s \n", argv[9],argv[8], argv[7]);
+            const unsigned char* result1 = (image);
+            saveBMP (filename1, result1, width, height);
+            //saveBMP      (const char* filename, const unsigned char* image, int width, int height);
+            free(forcesArr);
+            free(image);
 
             
             //almost done, just save the image
