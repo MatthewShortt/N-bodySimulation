@@ -324,7 +324,7 @@ int main(int argc, char* argv[]){
                 
                 //CORRECTLY FORMAT NAME OF FILE (number of zeros)
                 int numDigits = 0;
-                int zeroChecker = step;
+                int zeroChecker = step+1;
                 while(zeroChecker >= 1){
                     zeroChecker /= 10;
                     numDigits++;
@@ -375,7 +375,7 @@ int main(int argc, char* argv[]){
         double countTime=0;
         for(int i=0;i<(numSteps*numSubSteps);i++){
             countTime+=subStepTimes[i];
-            printf("this is time: %f \n",subStepTimes[i]);
+            //printf("this is time: %f \n",subStepTimes[i]);
             if(subStepTimes[i]<minTime){
                 minTime=subStepTimes[i];
             }
