@@ -345,7 +345,7 @@ int main(int argc, char* argv[]){
                     image[a]=(unsigned char) 0; //all pixels return to black
                 }
                 
-                //write pixels onto screen
+                //WRITE PIXELS TO IMAGE FOR THIS FRAME
                 for(int g=0;g<totalParticles;g++){
                     int xValue=(int) particles[g].getX();
                     int yValue=(int) particles[g].getY();
@@ -357,6 +357,8 @@ int main(int argc, char* argv[]){
                     
                 }
                 
+                
+                //GENERATE FRAME NAME FOR IMAGE
                 std::string one=argv[9];
                 std::string two="_0000";
                 std::string three= std::to_string(step+1);
