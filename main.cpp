@@ -358,9 +358,39 @@ int main(int argc, char* argv[]){
                 }
                 
                 
+                //CORRECTLY FORMAT NAME OF FILE (number of zeros)
+                int numDigits = 0;
+                int zeroChecker = step;
+                while(zeroChecker >= 1){
+                    zeroChecker /= 10;
+                    numDigits++;
+                }
+
+                std::string two = "";
+                switch(numDigits){
+                    case 5:
+                        two += "_";
+                        break;
+                    case 4:
+                        two += "_00";
+                        break;
+                    case 3:
+                        two += "_00";
+                        break;
+                    case 2:
+                        two += "_000";
+                        break;
+                    case 1:
+                        two += "_0000";
+                        break;
+                    default:
+                        two += "_00000";
+                        break;
+                }
+                
                 //GENERATE FRAME NAME FOR IMAGE
                 std::string one=argv[9];
-                std::string two="_0000";
+                //std::string two="_0000";
                 std::string three= std::to_string(step+1);
                 std::string four=".bmp";
                 
