@@ -300,9 +300,11 @@ int main(int argc, char* argv[]){
                         for(int innerDot = outerDot+1; innerDot < totalParticles; innerDot++){
                             
                             currentForce = particles[innerDot].getMass()/(abs(outerDotMagSquared - particles[innerDot].MagnitudeSquared()));
-                            //printf("currentForce: ");
-                            forcesArr[innerDot + width*outerDot] = currentForce;
-                            forcesArr[outerDot + width*innerDot] = -1 * currentForce;
+//                            printf("currentForce: %f  \tparticles[innerDot].getMass(): %f  \touterDotMagSquared: %f  \tinnerDotMag: %f  \n",currentForce ,particles[innerDot].getMass() ,outerDotMagSquared , particles[innerDot].MagnitudeSquared());
+                            forcesArr[innerDot + totalParticles*outerDot] = currentForce;
+                            forcesArr[outerDot + totalParticles*innerDot] = -1 * currentForce;
+                            
+                            //printf("forcesArr[innerDot + width*outerDot]: %f  \tforcesArr[outerDot + width*innerDot]: %f\n",forcesArr[innerDot + width*outerDot] ,forcesArr[outerDot + width*innerDot]);
                             
                         }
                         
@@ -318,12 +320,15 @@ int main(int argc, char* argv[]){
                 currentMass = particles[index].getMass();
                 totForce = 0;
                 forces = 0;
-                for(int length = 0; length < width; length ++){
-                    forces += forcesArr[length + index*width];
+                for(int length = 0; length < totalParticles; length ++){
+                    forces += forcesArr[length + index*totalParticles];
                 }
                 
-                totForce = G*forces*currentMass;
                 
+                totForce = forces*currentMass;
+                if(totForce < epsilon){
+                    totForce = epsilon;
+                }
                 
                 
                 
@@ -344,15 +349,20 @@ int main(int argc, char* argv[]){
 //                }
                 
                 //particles[index].getVelocity() + ((timeSubStep * totForce) / currentMass)
-                printf("force: %f  --- first velocity: %f    \t", totForce, particles[index].getVelocity());
+                
+                //if(index%5 == 0){
+                    //printf("force: %f  --- first velocity: %f    \t", totForce, particles[index].getVelocity());
+                //}
+                //printf("force: %f  --- first velocity: %f    \t", totForce, particles[index].getVelocity());
                 
                 
                 particles[index].setVelocity( particles[index], timeSubStep, totForce );
                 
                 
                 
-                
-                printf("after: %f \n", particles[index].getVelocity());
+                //if(index%5 == 0){
+                    //printf("after: %f \n", particles[index].getVelocity());
+                //}
             }
             
             for(int a=0; a<(3*frameSize);a++){//a+=3

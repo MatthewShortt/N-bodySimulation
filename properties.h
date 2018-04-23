@@ -3,6 +3,12 @@
 
 #include "vector3d.h"
 
+
+//G was so small the precision was not large enough, in some cases the force needed to be replaced by epsilon
+//solar mass was a way to scale the mass if necessary
+const double solarMass = 1;
+
+
 //light particles are the fastest
 double velocityLightMin = 11;
 double velocityLightMax = 15;
@@ -15,14 +21,14 @@ double velocityHeavyMin = 1;
 double velocityHeavyMax = 5;
 
 //mass
-double massLightMin = 1;
-double massLightMax = 5;
+double massLightMin = 1*solarMass;
+double massLightMax = 5*solarMass;
 
-double massMediumMin = 6;
-double massMediumMax = 10;
+double massMediumMin = 6*solarMass;
+double massMediumMax = 10*solarMass;
 
-double massHeavyMin = 11;
-double massHeavyMax = 15;
+double massHeavyMin = 11*solarMass;
+double massHeavyMax = 15*solarMass;
 
 
 //colours
