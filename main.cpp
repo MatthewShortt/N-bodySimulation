@@ -122,77 +122,93 @@ int main(int argc, char* argv[]){
             
             //memset(image, 0, sizeof(unsigned char) * 3 * frameSize);
 
-            
-            
-            
-            
-            for(int a=0; a<(3*frameSize);a++){//a+=3
-                image[a]=(unsigned char) 0;//0;
-                //image[a+1]=(unsigned char) 0;
-                //image[a+2]=(unsigned char) 0;
+            for(int a=0; a<(3*frameSize);a++){
+                image[a]=(unsigned char) 0;
+ 
             }
             
             vec3 particles [totalParticles];
             int count=0;
             double velocity=0;
+            double velocityX=0;
+            double velocityY=0;
+            double velocityZ=0;
             double mass=0;
             double xVal = 0;
             double yVal = 0;
             double zVal = 0;
-            int direction = 0;
+            int direction = 0;  
             
-            /*  === Directions Layout ===
-             
-             x       y       z     dir (int)
-             1       0       0  --> 0
-             0       1       0  --> 1
-             0       0       1  --> 2
-             1       1       0  --> 3
-             1       0       1  --> 4
-             0       1       1  --> 5
-             1       1       1  --> 6
-             
-             ================ */
-            
-            
-            
-            //const double G = -0.00000000006673;
+            const double G = 0.00000000006673;
             
             //create all three sizes of pixels
             
             for(int i=0; i<numParticlesLight; i++){
+                //determining direction by computing x y and z components of velocity
                 velocity=drand48()*(velocityLightMax-velocityLightMin)+velocityLightMin;
+
+                direction = (int) (drand48() * 1.99);
+                velocityX=drand48()*(velocity)*pow(-1,direction);
+                
+                
+                direction = (int) (drand48() * 1.99);
+                velocityY=drand48()*(sqrt(pow(velocity,2)-pow(velocityX,2)))*pow(-1,direction);
+
+                direction = (int) (drand48() * 1.99);
+                velocityZ=sqrt(pow(velocity,2)-pow(velocityX,2)-pow(velocityX,2))*pow(-1,direction);
+
                 mass=drand48()*(massLightMax-massLightMin)+massLightMin;
                 xVal = (drand48() * (width-1));
                 yVal = (drand48() * (height-1));
                 zVal = (drand48() * (zplane));
-                direction = (int) (drand48() * 6.99);
-                //printf("Coordinates X,Y,Z: %d %d %d\n", xVal, yVal, zVal);
-                particles[i] = vec3(xVal,yVal,zVal,255,0,0,mass,velocity,direction); //vec3(1,1,1,255,255,255);
+       
+                particles[i] = vec3(xVal,yVal,zVal,255,0,0,mass,velocityX, velocityY, velocityZ); //vec3(1,1,1,255,255,255);
                 
             }
             count=numParticlesLight;
             
             for(int j=count; j<(numParticleMedium+count); j++){
                 velocity=drand48()*(velocityMediumMax-velocityMediumMin)+velocityMediumMin;
+
+                direction = (int) (drand48() * 1.99);
+                velocityX=drand48()*(velocity)*pow(-1,direction);
+                
+                
+                direction = (int) (drand48() * 1.99);
+                velocityY=drand48()*(sqrt(pow(velocity,2)-pow(velocityX,2)))*pow(-1,direction);
+
+                direction = (int) (drand48() * 1.99);
+                velocityZ=sqrt(pow(velocity,2)-pow(velocityX,2)-pow(velocityX,2))*pow(-1,direction);
+                
                 mass=drand48()*(massMediumMax-massMediumMin)+massMediumMin;
                 xVal = (drand48() * (width-1));
                 yVal = (drand48() * (height-1));
                 zVal = (drand48() * (zplane));
-                direction = (int) (drand48() * 6.99);
-                particles[j] = vec3(xVal,yVal,zVal,0,255,0,mass,velocity,direction);//vec3(10,10,10,255,255,255);
+            
+                particles[j] = vec3(xVal,yVal,zVal,0,255,0,mass,velocityX, velocityY, velocityZ);//vec3(10,10,10,255,255,255);
                 
             }
             count=numParticlesLight+numParticleMedium;
             
             for(int k=count; k<(numParticleHeavy+count); k++){
                 velocity=drand48()*(velocityHeavyMax-velocityHeavyMin)+velocityHeavyMin;
+
+                direction = (int) (drand48() * 1.99);
+                velocityX=drand48()*(velocity)*pow(-1,direction);
+                
+                
+                direction = (int) (drand48() * 1.99);
+                velocityY=drand48()*(sqrt(pow(velocity,2)-pow(velocityX,2)))*pow(-1,direction);
+
+                direction = (int) (drand48() * 1.99);
+                velocityZ=sqrt(pow(velocity,2)-pow(velocityX,2)-pow(velocityX,2))*pow(-1,direction);
+
                 mass=drand48()*(massHeavyMax-massHeavyMin)+massHeavyMin;
                 xVal = (drand48() * (width-1));
                 yVal = (drand48() * (height-1));
                 zVal = (drand48() * (zplane));
-                direction = (int) (drand48() * 6.99);
-                particles[k] = vec3(xVal,yVal,zVal,0,0,255,mass,velocity,direction);//vec3(100,100,100,255,255,255);
+             
+                particles[k] = vec3(xVal,yVal,zVal,0,0,255,mass,velocityX, velocityY, velocityZ);//vec3(100,100,100,255,255,255);
                 
             }
 
@@ -212,8 +228,7 @@ int main(int argc, char* argv[]){
             strcat(file,"_00000.bmp");
             const char* filename = file;
             
-            
-            //printf("this is arg 9: %s %s %s \n", argv[9],argv[8], argv[7]);
+       
             const unsigned char* result = (image);
             saveBMP (filename, result, width, height);
             
@@ -231,22 +246,32 @@ int main(int argc, char* argv[]){
             
             
             
-            double outerDotMagSquared = 0;
+            //double outerDotMag = 0;
             //double forcesArr = (double *)malloc(totalParticles*totalParticles);
             
             double * forcesArr;
-            forcesArr = (double *)malloc(totalParticles*totalParticles*sizeof(double));
+            forcesArr = (double *)malloc(3*totalParticles*totalParticles*sizeof(double));
             
             
             //memset(forcesArr, 0, sizeof(double) * totalParticles*totalParticles);
-            for(int i = 0; i < (totalParticles*totalParticles) ; i++){
+            for(int i = 0; i < (3*totalParticles*totalParticles) ; i++){
                 forcesArr[i] = 0;
             }
+
             
-            double currentForce = 0;
-            
-            double forces = 0;
-            double totForce =  0;
+            double currentForceX = 0;
+            double currentForceY = 0;
+            double currentForceZ = 0;
+            double magX=0;
+            double magY=0;
+            double magZ=0;
+
+            double forcesX = 0;
+            double forcesY = 0;
+            double forcesZ = 0;
+            double totForceX =  0;
+            double totForceY =  0;
+            double totForceZ =  0;
             double currentMass = 0;
             
             // STEP
@@ -259,43 +284,98 @@ int main(int argc, char* argv[]){
 
                     //CALCULATING FORCES AT EACH SUBSTEP FOR EACH PARTICLE
                     for(int outerDot = 0; outerDot < totalParticles; outerDot++){
-                        currentForce = 0;
-                        outerDotMagSquared = particles[outerDot].MagnitudeSquared();
+                        currentForceX = 0;
+                        currentForceY = 0;
+                        currentForceZ = 0;
+                        magX=0;
+                        magY=0;
+                        magZ=0;
+                        
                         
                         //SUMMING THE FORCES OF INNERDOT PARTICLES ACTING UPON OUTERDOT PARTICLES
                         for(int innerDot = outerDot+1; innerDot < totalParticles; innerDot++){
+                            magX=pow(particles[outerDot].getX() - particles[innerDot].getX(),2);
+                            magY=pow(particles[outerDot].getY() - particles[innerDot].getY(),2);
+                            magZ=pow(particles[outerDot].getZ() - particles[innerDot].getZ(),2);
                             
-                            currentForce = particles[innerDot].getMass()/(abs(outerDotMagSquared - particles[innerDot].MagnitudeSquared()));
+                            currentForceX = particles[innerDot].getMass()*(particles[outerDot].getX()-particles[innerDot].getX())/(pow(sqrt(magX+magY+magZ),3));
+                            currentForceY = particles[innerDot].getMass()*(particles[outerDot].getY()-particles[innerDot].getY())/(pow(sqrt(magX+magY+magZ),3));
+                            currentForceZ = particles[innerDot].getMass()*(particles[outerDot].getZ()-particles[innerDot].getZ())/(pow(sqrt(magX+magY+magZ),3));
                             
-                            forcesArr[innerDot + totalParticles*outerDot] = currentForce;
-                            forcesArr[outerDot + totalParticles*innerDot] = -1 * currentForce;
-                            
+                            if(!isnan(currentForceX)){
+                              
+                                forcesArr[innerDot*3 + totalParticles*outerDot*3] = currentForceX;
+                                forcesArr[outerDot*3 + totalParticles*innerDot*3] = -1 * currentForceX;
+                            }
+                            if(!isnan(currentForceY)){
+                                
+                                forcesArr[innerDot*3 + totalParticles*outerDot*3 + 1] = currentForceY;
+                                forcesArr[outerDot*3 + totalParticles*innerDot*3 + 1] = -1 * currentForceY;
+                            }
+                            if(!isnan(currentForceZ)){
+                                
+                                forcesArr[innerDot*3 + totalParticles*outerDot*3 + 2] = currentForceZ;
+                                forcesArr[outerDot*3 + totalParticles*innerDot*3 + 2] = -1 * currentForceZ;
+                            }
                         }
                         
                     }
-                    
+                  
                     //RECALCULATING POSITION AND VELOCITY FOR EACH PARTICLE AT EACH SUBSTEP
-                    forces = 0;
-                    totForce =  0;
+                    forcesX = 0;
+                    forcesY = 0;
+                    forcesZ = 0;
+                    totForceX =  0;
+                    totForceY =  0;
+                    totForceZ =  0;
                     currentMass = 0;
                     for(int index = 0; index < totalParticles; index++){
                         currentMass = particles[index].getMass();
-                        totForce = 0;
-                        forces = 0;
+                        totForceX =  0;
+                        totForceY =  0;
+                        totForceZ =  0;
+                        forcesX = 0;
+                        forcesY = 0;
+                        forcesZ = 0;
                         for(int length = 0; length < totalParticles; length ++){
-                            forces += forcesArr[length + index*totalParticles];
+                           
+                            forcesX += forcesArr[length*3 + index*totalParticles*3];
+                            forcesY += forcesArr[length*3 + index*totalParticles*3 + 1];
+                            forcesZ += forcesArr[length*3 + index*totalParticles*3 + 2];
+                 
                         }
                         
-                        totForce = forces*currentMass;
-                        if(totForce < epsilon){
-                            totForce = epsilon;
+                        totForceX = (-1)*G*forcesX*currentMass;
+                        totForceY = (-1)*G*forcesY*currentMass;
+                        totForceZ = (-1)*G*forcesZ*currentMass;
+                        
+                        if(totForceX < epsilon && totForceX>0){
+                            totForceX = epsilon;
                         }
+                        if(totForceX > epsilon && totForceX<0){
+                            totForceX = (-1)*epsilon;
+                        }
+                        if(totForceY < epsilon && totForceY>0){
+                            totForceY = epsilon;
+                        }
+                        if(totForceY > epsilon && totForceY<0){
+                            totForceY = (-1)*epsilon;
+                        }
+                        if(totForceZ < epsilon && totForceZ>0){
+                            totForceZ = epsilon;
+                        }
+                        if(totForceZ > epsilon && totForceZ<0){
+                            totForceZ = (-1)*epsilon;
+                        }
+                        
                         
                         particles[index].setPosition( particles[index], timeSubStep );
                         
-                        particles[index].setVelocity( particles[index], timeSubStep, totForce );
+                        particles[index].setVelocityX( particles[index], timeSubStep, totForceX );
+                        particles[index].setVelocityY( particles[index], timeSubStep, totForceY );
+                        particles[index].setVelocityZ( particles[index], timeSubStep, totForceZ );
                     }
-
+//////////
                     end=MPI_Wtime();
                     timeRequired=end-start;
                     subStepTimes[step*numSubSteps+subStep]=timeRequired;
@@ -351,7 +431,7 @@ int main(int argc, char* argv[]){
                         two += "_00000";
                         break;
                 }
-                
+              
                 //GENERATE FRAME NAME FOR IMAGE
                 std::string one=argv[9];
                 std::string three= std::to_string(step+1);
@@ -363,32 +443,33 @@ int main(int argc, char* argv[]){
                 
                 const unsigned char* result1 = (image);
                 saveBMP (filename1, result1, width, height);
-                
+              
                 
             }
-    
+
+   
             free(forcesArr);
             free(image);
         
-        double minTime=1000;
-        double maxTime=0;
-        double countTime=0;
-        for(int i=0;i<(numSteps*numSubSteps);i++){
-            countTime+=subStepTimes[i];
-            //printf("this is time: %f \n",subStepTimes[i]);
-            if(subStepTimes[i]<minTime){
-                minTime=subStepTimes[i];
+            double minTime=1000;
+            double maxTime=0;
+            double countTime=0;
+            for(int i=0;i<(numSteps*numSubSteps);i++){
+                countTime+=subStepTimes[i];
+                
+                if(subStepTimes[i]<minTime){
+                    minTime=subStepTimes[i];
+                }
+                if(subStepTimes[i]>maxTime){
+                    maxTime=subStepTimes[i];
+                }
             }
-            if(subStepTimes[i]>maxTime){
-                maxTime=subStepTimes[i];
-            }
-        }
 
-        countTime=countTime/(numSteps*numSubSteps);
-        
-        printf("min time of substeps: %f \n",minTime);
-        printf("max time of substeps: %f \n",maxTime);
-        printf("average time of substeps: %f \n", countTime);
+            countTime=countTime/(numSteps*numSubSteps);
+            
+            printf("min time of substeps: %f \n",minTime);
+            printf("max time of substeps: %f \n",maxTime);
+            printf("average time of substeps: %f \n", countTime);
 
         }
         //all other nodes do this
