@@ -53,7 +53,7 @@ int main(int argc, char* argv[]){
         printf("Image height must be greter than 0.\n");
         inputError = 1;
     }
-   
+    
     
     if(inputError == 0){
         double start=0;
@@ -72,15 +72,73 @@ int main(int argc, char* argv[]){
         int numParticleMedium = 0;
         int numParticleHeavy = 0;
         
+        
+        int glob_steps = atoi(argv[4]) * atoi(argv[5]);;
+        
+        
+        
         int numSteps = 0;
         int numSubSteps = 0;
         double timeSubStep;
         
         int width, height;
         
+        int totalParticles = (atoi(argv[1]) + atoi(argv[2]) + atoi(argv[3]));
         
         unsigned char* image;
-
+        
+        
+        double * forcesArr = (double *)malloc(3*totalParticles*totalParticles*sizeof(double));
+        
+        
+        //int length_forcesArr = 3*totalParticles*totalParticles;
+        //double buff[length_forcesArr];
+        
+        for(int i = 0; i < (3*totalParticles*totalParticles) ; i++){
+            forcesArr[i] = 0;
+        }
+        
+        vec3 particles [totalParticles];
+        
+        vec3 tempParticles [totalParticles];
+        
+        MPI_Status status;
+        
+        int blockSizeP, startIndexForP;
+        
+        double glob_timeSubStep = (double) atof(argv[6]);
+        
+        int num_members = 10;
+        int lengths [num_members];
+        MPI_Datatype types [num_members];
+        
+        MPI_Aint offsets [num_members];
+        offsets [0]=offsetof (vec3, x);
+        offsets [1]=offsetof (vec3, y);
+        offsets [2]=offsetof (vec3, z);
+        offsets [3]=offsetof (vec3, r);
+        offsets [4]=offsetof (vec3, g);
+        offsets [5]=offsetof (vec3, b);
+        offsets [6]=offsetof (vec3, mass);
+        offsets [7]=offsetof (vec3, velocityX);
+        offsets [8]=offsetof (vec3, velocityY);
+        offsets [9]=offsetof (vec3, velocityZ);
+        
+        for(int i = 0; i < num_members; i++){
+            lengths[i] = 1;
+            if(i == 3 || i == 4 || i == 5){
+                types[i] = MPI_INT;
+            } else{
+                types[i] = MPI_DOUBLE;
+            }
+        }
+        //int lengths [num_members] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+        //= {offsetof (vec3, x), offsetof(vec3, y), offsetof (vec3, z)};
+        MPI_Datatype MPI_VEC3;
+        MPI_Type_create_struct (num_members, lengths, offsets, types, &MPI_VEC3);
+        MPI_Type_commit(&MPI_VEC3);
+        
+        const double G = 0.00000000006673;
         
         //root node stuff goes here
         if(my_rank == 0){
@@ -95,23 +153,22 @@ int main(int argc, char* argv[]){
             
             timeSubStep = (double) atof(argv[6]);
             
+            timeSubStep = timeSubStep + 1 - 1;//for testing
+            
             width = atoi(argv[7]);
             height = atoi(argv[8]);
             
             //depth of z plane
             const int zplane=100;
             
-            //print args to the console
-            printf("numParticlesLight: %d\nnumParticlesMedium: %d\nnumParticlesLarge: %d\nnumSteps: %d\nsubSteps: %d\ntimeSubStep: %f\nWidth: %d\nHeight: %d\n",numParticlesLight,numParticleMedium,numParticleHeavy,numSteps,numSubSteps,timeSubStep, width,height);
-            
             
             /* =====================================================================
              
-                                            Setup
+             Setup
              
              ===================================================================== */
             
-            const int totalParticles=numParticlesLight+numParticleMedium+numParticleHeavy;
+            totalParticles=numParticlesLight+numParticleMedium+numParticleHeavy;
             
             int frameSize=width*height;
             
@@ -119,15 +176,11 @@ int main(int argc, char* argv[]){
             image = (unsigned char *)malloc(3*frameSize*sizeof(unsigned char));
             
             //default all pixels to white/black
-            
-            //memset(image, 0, sizeof(unsigned char) * 3 * frameSize);
-
             for(int a=0; a<(3*frameSize);a++){
                 image[a]=(unsigned char) 0;
- 
+                
             }
             
-            vec3 particles [totalParticles];
             int count=0;
             double velocity=0;
             double velocityX=0;
@@ -137,31 +190,31 @@ int main(int argc, char* argv[]){
             double xVal = 0;
             double yVal = 0;
             double zVal = 0;
-            int direction = 0;  
+            int direction = 0;
             
-            const double G = 0.00000000006673;
+            
             
             //create all three sizes of pixels
             
             for(int i=0; i<numParticlesLight; i++){
                 //determining direction by computing x y and z components of velocity
                 velocity=drand48()*(velocityLightMax-velocityLightMin)+velocityLightMin;
-
+                
                 direction = (int) (drand48() * 1.99);
                 velocityX=drand48()*(velocity)*pow(-1,direction);
                 
                 
                 direction = (int) (drand48() * 1.99);
                 velocityY=drand48()*(sqrt(pow(velocity,2)-pow(velocityX,2)))*pow(-1,direction);
-
+                
                 direction = (int) (drand48() * 1.99);
                 velocityZ=sqrt(pow(velocity,2)-pow(velocityX,2)-pow(velocityX,2))*pow(-1,direction);
-
+                
                 mass=drand48()*(massLightMax-massLightMin)+massLightMin;
                 xVal = (drand48() * (width-1));
                 yVal = (drand48() * (height-1));
                 zVal = (drand48() * (zplane));
-       
+                
                 particles[i] = vec3(xVal,yVal,zVal,255,0,0,mass,velocityX, velocityY, velocityZ); //vec3(1,1,1,255,255,255);
                 
             }
@@ -169,14 +222,14 @@ int main(int argc, char* argv[]){
             
             for(int j=count; j<(numParticleMedium+count); j++){
                 velocity=drand48()*(velocityMediumMax-velocityMediumMin)+velocityMediumMin;
-
+                
                 direction = (int) (drand48() * 1.99);
                 velocityX=drand48()*(velocity)*pow(-1,direction);
                 
                 
                 direction = (int) (drand48() * 1.99);
                 velocityY=drand48()*(sqrt(pow(velocity,2)-pow(velocityX,2)))*pow(-1,direction);
-
+                
                 direction = (int) (drand48() * 1.99);
                 velocityZ=sqrt(pow(velocity,2)-pow(velocityX,2)-pow(velocityX,2))*pow(-1,direction);
                 
@@ -184,7 +237,7 @@ int main(int argc, char* argv[]){
                 xVal = (drand48() * (width-1));
                 yVal = (drand48() * (height-1));
                 zVal = (drand48() * (zplane));
-            
+                
                 particles[j] = vec3(xVal,yVal,zVal,0,255,0,mass,velocityX, velocityY, velocityZ);//vec3(10,10,10,255,255,255);
                 
             }
@@ -192,26 +245,26 @@ int main(int argc, char* argv[]){
             
             for(int k=count; k<(numParticleHeavy+count); k++){
                 velocity=drand48()*(velocityHeavyMax-velocityHeavyMin)+velocityHeavyMin;
-
+                
                 direction = (int) (drand48() * 1.99);
                 velocityX=drand48()*(velocity)*pow(-1,direction);
                 
                 
                 direction = (int) (drand48() * 1.99);
                 velocityY=drand48()*(sqrt(pow(velocity,2)-pow(velocityX,2)))*pow(-1,direction);
-
+                
                 direction = (int) (drand48() * 1.99);
                 velocityZ=sqrt(pow(velocity,2)-pow(velocityX,2)-pow(velocityX,2))*pow(-1,direction);
-
+                
                 mass=drand48()*(massHeavyMax-massHeavyMin)+massHeavyMin;
                 xVal = (drand48() * (width-1));
                 yVal = (drand48() * (height-1));
                 zVal = (drand48() * (zplane));
-             
+                
                 particles[k] = vec3(xVal,yVal,zVal,0,0,255,mass,velocityX, velocityY, velocityZ);//vec3(100,100,100,255,255,255);
                 
             }
-
+            
             
             //write pixels onto screen
             for(int g=0;g<totalParticles;g++){
@@ -228,7 +281,7 @@ int main(int argc, char* argv[]){
             strcat(file,"_00000.bmp");
             const char* filename = file;
             
-       
+            
             const unsigned char* result = (image);
             saveBMP (filename, result, width, height);
             
@@ -242,140 +295,76 @@ int main(int argc, char* argv[]){
              
              ===================================================================== */
             
+//            double currentForceX = 0;
+//            double currentForceY = 0;
+//            double currentForceZ = 0;
+//            double magX=0;
+//            double magY=0;
+//            double magZ=0;
+//            
+//            double forcesX = 0;
+//            double forcesY = 0;
+//            double forcesZ = 0;
+//            double totForceX =  0;
+//            double totForceY =  0;
+//            double totForceZ =  0;
+//            double currentMass = 0;
             
             
-            
-            
-            //double outerDotMag = 0;
-            //double forcesArr = (double *)malloc(totalParticles*totalParticles);
-            
-            double * forcesArr;
-            forcesArr = (double *)malloc(3*totalParticles*totalParticles*sizeof(double));
-            
-            
-            //memset(forcesArr, 0, sizeof(double) * totalParticles*totalParticles);
-            for(int i = 0; i < (3*totalParticles*totalParticles) ; i++){
-                forcesArr[i] = 0;
-            }
-
-            
-            double currentForceX = 0;
-            double currentForceY = 0;
-            double currentForceZ = 0;
-            double magX=0;
-            double magY=0;
-            double magZ=0;
-
-            double forcesX = 0;
-            double forcesY = 0;
-            double forcesZ = 0;
-            double totForceX =  0;
-            double totForceY =  0;
-            double totForceZ =  0;
-            double currentMass = 0;
+            //Matts vars
+            int numRows        = (totalParticles)/(p-1);
+            int numExtraRows   = (totalParticles)%(p-1);
+            int startIndexForP = 0;
+            blockSizeP     = 0;
+            int startIncrement = 0;
+            int rowSize        = 3;
+        
+            int tempStartIndex1 = 0;
+            int tempNumParticles1 = 0;
             
             // STEP
             for(int step = 0; step < numSteps; step++){
                 
                 //SUBSTEP
                 for(int subStep = 0; subStep < numSubSteps; subStep++){
+                    
 
                     start=MPI_Wtime();
+                    startIncrement = 0;
 
-                    //CALCULATING FORCES AT EACH SUBSTEP FOR EACH PARTICLE
-                    for(int outerDot = 0; outerDot < totalParticles; outerDot++){
-                        currentForceX = 0;
-                        currentForceY = 0;
-                        currentForceZ = 0;
-                        magX=0;
-                        magY=0;
-                        magZ=0;
+                    memcpy(tempParticles, particles, totalParticles*sizeof(vec3));
+                    
+                    for(int q = 1; q < p; q++){
+                        startIndexForP = startIncrement;
                         
-                        
-                        //SUMMING THE FORCES OF INNERDOT PARTICLES ACTING UPON OUTERDOT PARTICLES
-                        for(int innerDot = outerDot+1; innerDot < totalParticles; innerDot++){
-                            magX=pow(particles[outerDot].getX() - particles[innerDot].getX(),2);
-                            magY=pow(particles[outerDot].getY() - particles[innerDot].getY(),2);
-                            magZ=pow(particles[outerDot].getZ() - particles[innerDot].getZ(),2);
-                            
-                            currentForceX = particles[innerDot].getMass()*(particles[outerDot].getX()-particles[innerDot].getX())/(pow(sqrt(magX+magY+magZ),3));
-                            currentForceY = particles[innerDot].getMass()*(particles[outerDot].getY()-particles[innerDot].getY())/(pow(sqrt(magX+magY+magZ),3));
-                            currentForceZ = particles[innerDot].getMass()*(particles[outerDot].getZ()-particles[innerDot].getZ())/(pow(sqrt(magX+magY+magZ),3));
-                            
-                            if(!isnan(currentForceX)){
-                              
-                                forcesArr[innerDot*3 + totalParticles*outerDot*3] = currentForceX;
-                                forcesArr[outerDot*3 + totalParticles*innerDot*3] = -1 * currentForceX;
-                            }
-                            if(!isnan(currentForceY)){
-                                
-                                forcesArr[innerDot*3 + totalParticles*outerDot*3 + 1] = currentForceY;
-                                forcesArr[outerDot*3 + totalParticles*innerDot*3 + 1] = -1 * currentForceY;
-                            }
-                            if(!isnan(currentForceZ)){
-                                
-                                forcesArr[innerDot*3 + totalParticles*outerDot*3 + 2] = currentForceZ;
-                                forcesArr[outerDot*3 + totalParticles*innerDot*3 + 2] = -1 * currentForceZ;
-                            }
+                        if(q <= numExtraRows){
+                            blockSizeP = (numRows + 1)*rowSize;
+                        } else{
+                            blockSizeP = (numRows    )*rowSize;
                         }
+
+                        startIncrement += blockSizeP;
+                        MPI_Send(&startIndexForP, 1             , MPI_INT , q, 1, MPI_COMM_WORLD);
+                        MPI_Send(&blockSizeP    , 1             , MPI_INT , q, 1, MPI_COMM_WORLD);
+                        MPI_Send(&tempParticles     , totalParticles, MPI_VEC3, q, 1, MPI_COMM_WORLD);
                         
                     }
-                  
-                    //RECALCULATING POSITION AND VELOCITY FOR EACH PARTICLE AT EACH SUBSTEP
-                    forcesX = 0;
-                    forcesY = 0;
-                    forcesZ = 0;
-                    totForceX =  0;
-                    totForceY =  0;
-                    totForceZ =  0;
-                    currentMass = 0;
-                    for(int index = 0; index < totalParticles; index++){
-                        currentMass = particles[index].getMass();
-                        totForceX =  0;
-                        totForceY =  0;
-                        totForceZ =  0;
-                        forcesX = 0;
-                        forcesY = 0;
-                        forcesZ = 0;
-                        for(int length = 0; length < totalParticles; length ++){
-                           
-                            forcesX += forcesArr[length*3 + index*totalParticles*3];
-                            forcesY += forcesArr[length*3 + index*totalParticles*3 + 1];
-                            forcesZ += forcesArr[length*3 + index*totalParticles*3 + 2];
-                 
-                        }
+                    
+                    for(int src = 1; src < p; src++){
                         
-                        totForceX = (-1)*G*forcesX*currentMass;
-                        totForceY = (-1)*G*forcesY*currentMass;
-                        totForceZ = (-1)*G*forcesZ*currentMass;
+                        MPI_Recv(&startIndexForP, 1, MPI_INT, src, 2, MPI_COMM_WORLD, &status);
+                        MPI_Recv(&blockSizeP    , 1, MPI_INT, src, 2, MPI_COMM_WORLD, &status);
+                        MPI_Recv(&tempParticles    , totalParticles, MPI_VEC3, src, 2, MPI_COMM_WORLD, &status);
                         
-                        if(totForceX < epsilon && totForceX>0){
-                            totForceX = epsilon;
-                        }
-                        if(totForceX > epsilon && totForceX<0){
-                            totForceX = (-1)*epsilon;
-                        }
-                        if(totForceY < epsilon && totForceY>0){
-                            totForceY = epsilon;
-                        }
-                        if(totForceY > epsilon && totForceY<0){
-                            totForceY = (-1)*epsilon;
-                        }
-                        if(totForceZ < epsilon && totForceZ>0){
-                            totForceZ = epsilon;
-                        }
-                        if(totForceZ > epsilon && totForceZ<0){
-                            totForceZ = (-1)*epsilon;
-                        }
+                        tempNumParticles1 = blockSizeP / 3;
+                        tempStartIndex1 = startIndexForP / 3;
                         
-                        
-                        particles[index].setPosition( particles[index], timeSubStep );
-                        
-                        particles[index].setVelocityX( particles[index], timeSubStep, totForceX );
-                        particles[index].setVelocityY( particles[index], timeSubStep, totForceY );
-                        particles[index].setVelocityZ( particles[index], timeSubStep, totForceZ );
+                        for(int i = tempStartIndex1; i < (tempNumParticles1+tempStartIndex1); i++){
+                            particles[i] = tempParticles[i-tempStartIndex1];
+                        }
+  
                     }
-//////////
+                    
                     end=MPI_Wtime();
                     timeRequired=end-start;
                     subStepTimes[step*numSubSteps+subStep]=timeRequired;
@@ -409,7 +398,7 @@ int main(int argc, char* argv[]){
                     zeroChecker /= 10;
                     numDigits++;
                 }
-
+                
                 std::string two = "";
                 switch(numDigits){
                     case 5:
@@ -431,7 +420,7 @@ int main(int argc, char* argv[]){
                         two += "_00000";
                         break;
                 }
-              
+                
                 //GENERATE FRAME NAME FOR IMAGE
                 std::string one=argv[9];
                 std::string three= std::to_string(step+1);
@@ -443,14 +432,14 @@ int main(int argc, char* argv[]){
                 
                 const unsigned char* result1 = (image);
                 saveBMP (filename1, result1, width, height);
-              
+                
                 
             }
-
-   
+            
+            
             free(forcesArr);
             free(image);
-        
+            
             double minTime=1000;
             double maxTime=0;
             double countTime=0;
@@ -464,19 +453,173 @@ int main(int argc, char* argv[]){
                     maxTime=subStepTimes[i];
                 }
             }
-
+            
             countTime=countTime/(numSteps*numSubSteps);
             
             printf("min time of substeps: %f \n",minTime);
             printf("max time of substeps: %f \n",maxTime);
             printf("average time of substeps: %f \n", countTime);
-
+            
         }
         //all other nodes do this
         else{
             
-        }
+            double currentForceX = 0;
+            double currentForceY = 0;
+            double currentForceZ = 0;
+            double magX=0;
+            double magY=0;
+            double magZ=0;
+            
+            double forcesX = 0;
+            double forcesY = 0;
+            double forcesZ = 0;
+            double totForceX =  0;
+            double totForceY =  0;
+            double totForceZ =  0;
+            double currentMass = 0;
+            
+            int tempNumParticles = 0;
+            int tempStartIndex = 0;
+            
+            int counter2 = 0;
+            
+            
+            double posX, posY, posZ, velX, velY, velZ;
+            
+            
+            for(int cnt = 0; cnt < glob_steps; cnt++){
+                MPI_Recv(&startIndexForP, 1, MPI_INT, 0, 1, MPI_COMM_WORLD, &status);
+                MPI_Recv(&blockSizeP    , 1, MPI_INT, 0, 1, MPI_COMM_WORLD, &status);
+                MPI_Recv(&particles     , totalParticles, MPI_VEC3, 0, 1, MPI_COMM_WORLD, &status);
 
+                tempNumParticles = blockSizeP / 3;
+                tempStartIndex = startIndexForP / 3;
+                
+                double * tempForces = (double *)malloc(blockSizeP*totalParticles*sizeof(double));
+
+                
+                //CALCULATING FORCES AT EACH SUBSTEP FOR EACH PARTICLE
+                for(int outerDot = tempStartIndex; outerDot < (tempStartIndex + tempNumParticles); outerDot++){
+                    currentForceX = 0;
+                    currentForceY = 0;
+                    currentForceZ = 0;
+                    magX=0;
+                    magY=0;
+                    magZ=0;
+                    
+                    
+                    //SUMMING THE FORCES OF INNERDOT PARTICLES ACTING UPON OUTERDOT PARTICLES
+                    for(int innerDot = 0; innerDot < totalParticles; innerDot++){
+                        
+                        if(innerDot != outerDot){
+                            magX=pow(particles[outerDot].getX() - particles[innerDot].getX(),2);
+                            magY=pow(particles[outerDot].getY() - particles[innerDot].getY(),2);
+                            magZ=pow(particles[outerDot].getZ() - particles[innerDot].getZ(),2);
+                            
+                            currentForceX = particles[innerDot].getMass()*(particles[outerDot].getX()-particles[innerDot].getX())/(pow(sqrt(magX+magY+magZ),3));
+                            currentForceY = particles[innerDot].getMass()*(particles[outerDot].getY()-particles[innerDot].getY())/(pow(sqrt(magX+magY+magZ),3));
+                            currentForceZ = particles[innerDot].getMass()*(particles[outerDot].getZ()-particles[innerDot].getZ())/(pow(sqrt(magX+magY+magZ),3));
+                        }
+
+                       
+                        if(!isnan(currentForceX)){
+                            
+                            tempForces[(innerDot)*3 + totalParticles*(outerDot-tempStartIndex)*3] = currentForceX;
+                        }
+                        if(!isnan(currentForceY)){
+                            
+                            tempForces[(innerDot)*3 + totalParticles*(outerDot-tempStartIndex)*3 + 1] = currentForceY;
+                        }
+                        if(!isnan(currentForceZ)){
+                            
+                            tempForces[(innerDot)*3 + totalParticles*(outerDot-tempStartIndex)*3 + 2] = currentForceZ;
+                        }
+                        
+                    }
+
+                }
+                
+            
+                //RECALCULATING POSITION AND VELOCITY FOR EACH PARTICLE AT EACH SUBSTEP
+                forcesX = 0;
+                forcesY = 0;
+                forcesZ = 0;
+                totForceX =  0;
+                totForceY =  0;
+                totForceZ =  0;
+                currentMass = 0;
+                
+                vec3 tempVec;
+                
+                
+                for(int index = tempStartIndex; index < (tempNumParticles+tempStartIndex); index++){
+                    
+                    currentMass = particles[index].getMass();
+                    totForceX =  0;
+                    totForceY =  0;
+                    totForceZ =  0;
+                    forcesX = 0;
+                    forcesY = 0;
+                    forcesZ = 0;
+                    for(int length = 0; length < totalParticles; length ++){
+                        
+                        forcesX += tempForces[length*3 + (index-tempStartIndex)*totalParticles*3];
+                        forcesY += tempForces[length*3 + (index-tempStartIndex)*totalParticles*3 + 1];
+                        forcesZ += tempForces[length*3 + (index-tempStartIndex)*totalParticles*3 + 2];
+                        
+                    }
+                    
+                    totForceX = (-1)*G*forcesX*currentMass;
+                    totForceY = (-1)*G*forcesY*currentMass;
+                    totForceZ = (-1)*G*forcesZ*currentMass;
+                    
+                    if(totForceX < epsilon && totForceX>0){
+                        totForceX = epsilon;
+                    }
+                    if(totForceX > epsilon && totForceX<0){
+                        totForceX = (-1)*epsilon;
+                    }
+                    if(totForceY < epsilon && totForceY>0){
+                        totForceY = epsilon;
+                    }
+                    if(totForceY > epsilon && totForceY<0){
+                        totForceY = (-1)*epsilon;
+                    }
+                    if(totForceZ < epsilon && totForceZ>0){
+                        totForceZ = epsilon;
+                    }
+                    if(totForceZ > epsilon && totForceZ<0){
+                        totForceZ = (-1)*epsilon;
+                    }
+                    
+                    
+                    posX = particles[index].getX() + glob_timeSubStep * particles[index].getVelocityX();
+                    posY = particles[index].getY() + glob_timeSubStep * particles[index].getVelocityY();
+                    posZ = particles[index].getZ() + glob_timeSubStep * particles[index].getVelocityZ();
+
+                    velX = particles[index].getVelocityX() + ((glob_timeSubStep*totForceX)/ particles[index].getMass());
+                    velY = particles[index].getVelocityY() + ((glob_timeSubStep*totForceY)/ particles[index].getMass());
+                    velZ = particles[index].getVelocityZ() + ((glob_timeSubStep*totForceZ)/ particles[index].getMass());
+                    
+                    tempVec = vec3(posX,posY,posZ,particles[index].getR(),particles[index].getG(),particles[index].getB(),particles[index].getMass(),velX, velY, velZ);
+                    particles[index] = tempVec;
+                    
+                    counter2 ++;
+                }
+                
+                free(tempForces);
+                
+                
+                
+                MPI_Send(&startIndexForP, 1             , MPI_INT , 0, 2, MPI_COMM_WORLD);
+                MPI_Send(&blockSizeP    , 1             , MPI_INT , 0, 2, MPI_COMM_WORLD);
+                MPI_Send(&particles     , totalParticles, MPI_VEC3, 0, 2, MPI_COMM_WORLD);
+
+            }
+            
+        }
+        
         
         MPI_Finalize();
         

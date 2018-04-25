@@ -15,16 +15,17 @@ public:
 		
 
 	// Ctors
-	vec3( double InX, double InY, double InZ, int InR, int InG, int InB, double InMass, double InVelocityX, double InVelocityY, double InVelocityZ  ) : x( InX ), y( InY ), z( InZ )
+    vec3( double InX, double InY, double InZ, int InR, int InG, int InB, double InMass, double InVelocityX, double InVelocityY, double InVelocityZ  ) : x( InX ), y( InY ), z( InZ ), r(InR), g(InG), b(InB), mass(InMass),velocityX(InVelocityX), velocityY(InVelocityY), velocityZ(InVelocityZ)
 		{
-			r=InR;
+			/*
+            r=InR;
 			g=InG;
 			b=InB;
 			mass=InMass;
 			velocityX=InVelocityX;
 			velocityY=InVelocityY;
 			velocityZ=InVelocityZ;
-            
+            */
 		}
 
 	void SetDoublePoint( const double *v ) {  x=v[0]; y=v[1]; z=v[2]; }
